@@ -1,9 +1,18 @@
+using Marvel.Application.Repositories;
+using Marvel.Application.Services;
 using Marvel.Infrastruture.Context;
+using Marvel.Infrastruture.Repositories;
+using Marvel.Infrastruture.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRepository, Repository>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
