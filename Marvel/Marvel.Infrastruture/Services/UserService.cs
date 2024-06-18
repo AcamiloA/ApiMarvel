@@ -1,7 +1,9 @@
 ﻿using Marvel.Application.DTO;
 using Marvel.Application.Repositories;
+using Marvel.Application.Security;
 using Marvel.Application.Services;
 using Marvel.Domain.Entities;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -39,22 +41,31 @@ namespace Marvel.Infrastruture.Services
             return user;
         }
 
-        public async Task<bool> Login(string? nickname, string? email, string password)
+        public async Task<TokenDTO> Login(string? nickname, string? email, string password)
         {
+            TokenDTO token = new();
+            bool flag = true;
             List<User> list = await _repository.GetAllAsync<User>();
-            if (nickname != null && !list.Where(_ => _.NickName == nickname).Any())
-                throw new InvalidDataException("El nickname ingresado no existe");
-            else if (email != null && !list.Where(_ => _.Email == email).Any())
-                throw new InvalidDataException("El coreo ingresado no existe");
+            if (!string.IsNullOrEmpty(nickname) && !list.Where(_ => _.NickName == nickname).Any())
+                flag = false;
+            else if (!string.IsNullOrEmpty(email) && !list.Where(_ => _.Email == email).Any())
+                flag = false;
+            else if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(nickname))
+                flag = false;
+
+            if (!flag)
+            {
+                token.IsSucceeded = flag;
+                return token;
+            }
+                
 
             User user = list.Where(_ => _.NickName == nickname || _.Email == email).FirstOrDefault()!;
 
-            if (VerifyPassword(password, user.PasswordHash, user.Salt))
-            {
-                return true;
-            }
+            if (VerifyPassword(password, user.PasswordHash, user.Salt)) token.IsSucceeded = true;
+            else token.IsSucceeded = false;
 
-            throw new InvalidDataException("Contraseña incorrecta");
+            return token;
         }
 
         public static bool VerifyPassword(string password, string storedHash, string storedSalt)
@@ -81,7 +92,7 @@ namespace Marvel.Infrastruture.Services
             byte[] hashBytes = SHA256.HashData(saltedPasswordBytes);
             string passwordHash = Convert.ToBase64String(hashBytes);
             return (passwordHash, salt);
-        }        
+        }
 
         private async Task ValidateAsync(UserDTO user)
         {
@@ -96,6 +107,6 @@ namespace Marvel.Infrastruture.Services
                 throw new InvalidDataException("El correo y la confirmación del correo no coinciden");
         }
 
-        
+
     }
 }

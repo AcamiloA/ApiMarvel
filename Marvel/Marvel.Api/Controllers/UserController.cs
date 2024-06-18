@@ -1,10 +1,12 @@
 ﻿using Marvel.Application.DTO;
+using Marvel.Application.Security;
 using Marvel.Application.Services;
-using Marvel.Domain.Entities;
-using Marvel.Infrastruture.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace Marvel.Api.Controllers
 {
@@ -12,11 +14,14 @@ namespace Marvel.Api.Controllers
     /// Controlador para tratamiento de información del usuario
     /// </summary>
     /// <param name="userService"></param>
+    /// <param name="jwtSettings"></param>
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class UserController(IUserService userService) : ControllerBase
+    [AllowAnonymous]
+    public class UserController(IUserService userService, IOptions<JwtSecuritySettings> jwtSettings) : ControllerBase
     {
         private readonly IUserService _userService = userService;
+        private readonly JwtSecuritySettings _jwtSettings = jwtSettings.Value;
 
         /// <summary>
         ///     Endpoint de prueba para validar si el api esta funcionando correctamente.
@@ -57,16 +62,54 @@ namespace Marvel.Api.Controllers
         /// <param name="password">Password del usuario</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> Login(string? nickname, string? email, string password)
+        public async Task<ActionResult<IOAuth2Response>> Login(string? nickname, string? email, string password)
         {
             try
             {
-               return Ok(await _userService.Login(nickname, email, password));
+                TokenDTO? token = await _userService.Login(nickname, email, password);
+                if (token.IsSucceeded)
+                {
+                    token.Token = BuildToken(token);
+                    token.ExpiresIn = 3600;
+                    token.NickName = nickname ?? "";
+                    token.Email = email ?? "";
+
+                    return Ok(token.Result);
+                }
+                return BadRequest(token.Result);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Construye el token de autenticación
+        /// </summary>
+        /// <param name="user">Usuario</param>
+        /// <returns></returns>
+        private string BuildToken(TokenDTO user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret!);
+            user.ExpiresIn = _jwtSettings.ExpireTimeHours * 60 * 60;
+            user.TokenType = "Bearer";
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new System.Security.Claims.ClaimsIdentity(
+                [
+                    new(System.Security.Claims.ClaimTypes.Name, user.NickName ?? user.Email)
+                ]),
+                Expires = DateTime.UtcNow.AddHours(_jwtSettings.ExpireTimeHours),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _jwtSettings.Issuer,
+                Audience = _jwtSettings.Audience
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+            return tokenString;
         }
 
     }

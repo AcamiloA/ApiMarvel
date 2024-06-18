@@ -1,8 +1,10 @@
 using Marvel.Application.Repositories;
+using Marvel.Application.Security;
 using Marvel.Application.Services;
 using Marvel.Infrastruture.Context;
 using Marvel.Infrastruture.Repositories;
 using Marvel.Infrastruture.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -23,6 +25,9 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
+var jwtSecuritySettingsSection = builder.Configuration.GetSection(nameof(JwtSecuritySettings));
+builder.Services.Configure<JwtSecuritySettings>(jwtSecuritySettingsSection);
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -42,6 +47,29 @@ builder.Services.AddSwaggerGen(options =>
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
     options.IncludeXmlComments(xmlPath);
+
+    var securityScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Jwt Authorization. **Token only**",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+
+    options.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            securityScheme,
+            new List<string>()
+        }
+    });
 });
 
 var app = builder.Build();
