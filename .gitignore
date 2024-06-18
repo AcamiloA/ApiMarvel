@@ -1,0 +1,14 @@
+﻿################################################################################
+# Este archivo .gitignore ha sido creado automáticamente por Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/Marvel/.vs/Marvel
+/Marvel/Marvel.Api/obj
+/Marvel/Marvel.Api/Properties
+*.csproj
+*.user
+/Marvel/Marvel.Api/Marvel.Api.http
+/Marvel/Marvel.Application/obj
+/Marvel/Marvel.Domain/obj
+/Marvel/Marvel.Infrastruture/obj
