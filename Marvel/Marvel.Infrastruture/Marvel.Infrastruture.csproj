@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Marvel.Application\Marvel.Application.csproj" />
+    <ProjectReference Include="..\Marvel.Domain\Marvel.Domain.csproj" />
   </ItemGroup>
 
 </Project>
