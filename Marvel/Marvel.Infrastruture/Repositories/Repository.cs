@@ -1,6 +1,5 @@
 ﻿using Marvel.Application.Repositories;
 using Marvel.Infrastruture.Context;
-using System.Collections.Generic;
 
 namespace Marvel.Infrastruture.Repositories
 {
@@ -13,29 +12,33 @@ namespace Marvel.Infrastruture.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public Task DeleteAsync<T>(int id) where T : class
+        public async Task DeleteAsync<T>(int id) where T : class
         {
-            throw new NotImplementedException();
+            var data = await _context.Set<T>().FindAsync(id);
+            if(data != null)
+                _context.Set<T>().Remove(data);
+            _context.SaveChanges();
         }
 
         public async Task<List<T>> GetAllAsync<T>() where T : class
         {
-            return _context.Set<T>().ToList();
+            return [.. _context.Set<T>()];
         }
 
-        public Task<T> GetByIdAsync<T>(Guid id) where T : class
+        public async Task<T?> GetByIdAsync<T>(Guid id) where T : class
         {
-            throw new NotImplementedException();
+            return await _context.Set<T>().FindAsync(id);
         }
 
-        public Task<T> GetByIdAsync<T>(int id) where T : class
+        public async Task<T?> GetByIdAsync<T>(int id) where T : class
         {
-            throw new NotImplementedException();
+            return await _context.Set<T>().FindAsync(id);
         }
 
-        public Task UpdateAsync<T>(T entity) where T : class
+        public async Task UpdateAsync<T>(T entity) where T : class
         {
-            throw new NotImplementedException();
+            _context.Update(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }

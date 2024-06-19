@@ -15,9 +15,8 @@ namespace Marvel.Api.Controllers
     /// </summary>
     /// <param name="userService"></param>
     /// <param name="jwtSettings"></param>
-    [Route("api/[controller]/[action]")]
+    [Route("v1/[controller]/[action]")]
     [ApiController]
-    [AllowAnonymous]
     public class UserController(IUserService userService, IOptions<JwtSecuritySettings> jwtSettings) : ControllerBase
     {
         private readonly IUserService _userService = userService;
@@ -40,6 +39,7 @@ namespace Marvel.Api.Controllers
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult> Register([FromBody] UserDTO user)
         {
@@ -61,6 +61,7 @@ namespace Marvel.Api.Controllers
         /// <param name="email">Email al cual quiere recibir notificaciones y para el acceso</param>
         /// <param name="password">Password del usuario</param>
         /// <returns></returns>
+        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<IOAuth2Response>> Login(string? nickname, string? email, string password)
         {

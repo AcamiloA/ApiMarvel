@@ -1,3 +1,4 @@
+using Marvel.Api.Helpers;
 using Marvel.Application.Repositories;
 using Marvel.Application.Security;
 using Marvel.Application.Services;
@@ -13,6 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRepository, Repository>();
+
+builder.Services.AddScoped<IComicService, ComicService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 
@@ -72,6 +75,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddIdentityJwt(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -82,6 +87,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
