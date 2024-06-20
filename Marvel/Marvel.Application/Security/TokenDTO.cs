@@ -15,6 +15,7 @@ namespace Marvel.Application.Security
                 {
                     OAuth2SuccessResponse result = new()
                     {
+                        IsSucceeded = true,
                         Access_token = Token!,
                         Refresh_token = Token!,
                         Token_type = TokenType,
@@ -27,6 +28,7 @@ namespace Marvel.Application.Security
                     OAuth2ErrorResponse result = new()
                     {
                         Error = "Unauthorized",
+                        IsSucceeded = false,
                         ErrorDescription = "Usuario o contraseña incorrectos"
                     };
                     return result;

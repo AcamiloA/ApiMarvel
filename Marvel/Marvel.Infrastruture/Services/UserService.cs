@@ -44,25 +44,15 @@ namespace Marvel.Infrastruture.Services
         public async Task<TokenDTO> Login(string? nickname, string? email, string password)
         {
             TokenDTO token = new();
-            bool flag = true;
             List<User> list = await _repository.GetAllAsync<User>();
-            if (!string.IsNullOrEmpty(nickname) && !list.Where(_ => _.NickName == nickname).Any())
-                flag = false;
-            else if (!string.IsNullOrEmpty(email) && !list.Where(_ => _.Email == email).Any())
-                flag = false;
-            else if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(nickname))
-                flag = false;
-
-            if (!flag)
-            {
-                token.IsSucceeded = flag;
-                return token;
-            }
-                
 
             User user = list.Where(_ => _.NickName == nickname || _.Email == email).FirstOrDefault()!;
-
-            if (VerifyPassword(password, user.PasswordHash, user.Salt)) token.IsSucceeded = true;
+            if (user == null)
+            {
+                token.IsSucceeded = false;
+                return token;
+            }
+            if (VerifyPassword(password, user!.PasswordHash, user.Salt)) token.IsSucceeded = true;
             else token.IsSucceeded = false;
 
             return token;

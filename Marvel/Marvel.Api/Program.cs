@@ -31,6 +31,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 var jwtSecuritySettingsSection = builder.Configuration.GetSection(nameof(JwtSecuritySettings));
 builder.Services.Configure<JwtSecuritySettings>(jwtSecuritySettingsSection);
 
+
+builder.Services.AddCors(cors =>
+{
+    cors.AddPolicy("AllowAnyOrigin", builder =>
+    {
+        builder.AllowAnyOrigin().
+        AllowAnyHeader().
+        AllowAnyMethod();
+    });
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -85,6 +96,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowAnyOrigin");
 
 app.UseHttpsRedirection();
 

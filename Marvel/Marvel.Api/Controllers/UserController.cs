@@ -1,4 +1,5 @@
-﻿using Marvel.Application.DTO;
+﻿using Marvel.Api.Helpers;
+using Marvel.Application.DTO;
 using Marvel.Application.Security;
 using Marvel.Application.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -41,43 +42,49 @@ namespace Marvel.Api.Controllers
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult> Register([FromBody] UserDTO user)
+        public async Task<ActionResult<Response>> Register([FromBody] UserDTO user)
         {
             try
             {
                 var registeredUser = await _userService.RegisterAsync(user);
-                return Ok(registeredUser);
+                return Ok(new Response()
+                {
+                    IsSuccess = true,
+                    Message = "Usuario creado con exito"
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return Conflict(new Response()
+                {
+                    IsSuccess = false,
+                    Message = "No fue posible crear el usuario",
+                    Errors = ex.Message
+                });
             }
         }
 
         /// <summary>
         /// Método para registrarse por primera vez
         /// </summary>
-        /// <param name="nickname">Alias escogido por el usuario para llamarse dentro del aplicativo</param>
-        /// <param name="email">Email al cual quiere recibir notificaciones y para el acceso</param>
-        /// <param name="password">Password del usuario</param>
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
-        public async Task<ActionResult<IOAuth2Response>> Login(string? nickname, string? email, string password)
+        public async Task<ActionResult<IOAuth2Response>> Login([FromBody] LoginDTO login)
         {
             try
             {
-                TokenDTO? token = await _userService.Login(nickname, email, password);
+                TokenDTO? token = await _userService.Login(login.Nickname, login.Email, login.Password);
                 if (token.IsSucceeded)
                 {
                     token.Token = BuildToken(token);
                     token.ExpiresIn = 3600;
-                    token.NickName = nickname ?? "";
-                    token.Email = email ?? "";
+                    token.NickName = login.Nickname ?? "";
+                    token.Email = login.Email ?? "";
 
                     return Ok(token.Result);
                 }
-                return BadRequest(token.Result);
+                return Unauthorized(token.Result);
             }
             catch (Exception ex)
             {

@@ -18,19 +18,11 @@ namespace Marvel.Api.Controllers
         /// <summary>
         /// Método para añadir comics a la lista de favoritosde cada usuario.
         /// </summary>
-        /// <param name="user"></param>
-        /// <param name="comicId"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> FavoriteComic(Guid user, string comicId)
+        public async Task<ActionResult> FavoriteComic([FromBody] FavoriteComic comic)
         {
-            FavoriteComic model = new()
-            {
-                UserId = user,
-                ComicId = comicId
-            };
-            await _comicService.AddFavoriteComic(model);
-
+            await _comicService.AddFavoriteComic(comic);
             return Ok();
         }
 
