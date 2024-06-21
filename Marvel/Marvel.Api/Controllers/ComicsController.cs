@@ -50,16 +50,34 @@ namespace Marvel.Api.Controllers
         /// <param name="comic"></param>
         /// <returns></returns>
         [HttpDelete("{user}/{comic}")]
-        public async Task<ActionResult> UnfavoriteComic(string user, int comic)
+        public async Task<ActionResult<Response>> UnfavoriteComic(string user, int comic)
         {
-            FavoriteComic model = new()
+            try
             {
-                User = user,
-                ComicId = comic
-            };
-            await _comicService.RemoveFavoriteComic(model);
+                FavoriteComic model = new()
+                {
+                    User = user,
+                    ComicId = comic
+                };
+                await _comicService.RemoveFavoriteComic(model);
 
-            return Ok();
+                return Ok(new Response()
+                {
+                    IsSuccess = true,
+                    Message = "Comic eliminado exitosamente",
+
+                }); ;
+            }
+            catch (Exception ex)
+            {
+                return Conflict(new Response()
+                {
+                    IsSuccess = false,
+                    Message = "Error al elminar comic de favoritos",
+                    Errors = ex.Message
+                }); 
+            }
+            
         }
 
         /// <summary>
