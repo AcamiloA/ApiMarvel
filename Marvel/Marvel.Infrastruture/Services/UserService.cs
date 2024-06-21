@@ -52,8 +52,13 @@ namespace Marvel.Infrastruture.Services
                 token.IsSucceeded = false;
                 return token;
             }
-            if (VerifyPassword(password, user!.PasswordHash, user.Salt)) token.IsSucceeded = true;
+            if (VerifyPassword(password, user!.PasswordHash, user.Salt))
+            {
+                token.IsSucceeded = true;
+                token.User = user.Id.ToString();
+            }
             else token.IsSucceeded = false;
+
 
             return token;
         }

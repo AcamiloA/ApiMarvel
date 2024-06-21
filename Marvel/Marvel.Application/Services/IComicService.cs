@@ -6,6 +6,6 @@ namespace Marvel.Application.Services
     {
         Task AddFavoriteComic(FavoriteComic favoriteComic);
         Task RemoveFavoriteComic(FavoriteComic favoriteComic);
-        Task<List<FavoriteComic>> GetAllFavorites(Guid userId);
+        Task<List<FavoriteComic>> GetAllFavorites(string userId);
     }
 }

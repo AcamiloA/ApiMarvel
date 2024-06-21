@@ -7,6 +7,7 @@ namespace Marvel.Application.Security
         public int? Id { get; set; }
         public string? Token { get; set; } = string.Empty;
         public bool IsSucceeded { get; set; }
+        public string User { get; set; } = string.Empty;
         public IOAuth2Response Result
         {
             get
@@ -20,6 +21,7 @@ namespace Marvel.Application.Security
                         Refresh_token = Token!,
                         Token_type = TokenType,
                         Expires_in = ExpiresIn,
+                        User = User
                     };
                     return result;
                 }

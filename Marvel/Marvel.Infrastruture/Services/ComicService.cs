@@ -13,19 +13,19 @@ namespace Marvel.Infrastruture.Services
             await _repository.AddAsync(favoriteComic);
         }
 
-        public async Task<List<FavoriteComic>> GetAllFavorites(Guid userId)
+        public async Task<List<FavoriteComic>> GetAllFavorites(string userId)
         {
             var list = await _repository.GetAllAsync<FavoriteComic>();
 
-            return list.Where(_ => _.UserId == userId).ToList();
+            return list.Where(_ => _.User == userId).ToList();
         }
 
         public async Task RemoveFavoriteComic(FavoriteComic favoriteComic)
         {
             var list = await _repository.GetAllAsync<FavoriteComic>();
-            int id = list.Where(_ => _.UserId == favoriteComic.UserId && _.ComicId == favoriteComic.ComicId).Select(_ => _.Id).FirstOrDefault();
+            int? id = list.Where(_ => _.User == favoriteComic.User && _.ComicId == favoriteComic.ComicId).Select(_ => _.Id).FirstOrDefault();
             if (id > 0)
-                await _repository.DeleteAsync<FavoriteComic>(id);
+                await _repository.DeleteAsync<FavoriteComic>(id??0);
         }
     }
 }

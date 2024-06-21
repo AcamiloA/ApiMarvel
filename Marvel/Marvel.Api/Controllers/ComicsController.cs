@@ -1,4 +1,5 @@
-﻿using Marvel.Application.Repositories;
+﻿using Marvel.Api.Helpers;
+using Marvel.Application.Repositories;
 using Marvel.Application.Services;
 using Marvel.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -20,25 +21,41 @@ namespace Marvel.Api.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
-        public async Task<ActionResult> FavoriteComic([FromBody] FavoriteComic comic)
+        public async Task<ActionResult<Response>> FavoriteComic([FromBody] FavoriteComic comic)
         {
-            await _comicService.AddFavoriteComic(comic);
-            return Ok();
+            try
+            {
+                await _comicService.AddFavoriteComic(comic);
+                return Ok(new Response()
+                {
+                    IsSuccess = true,
+                    Message = "Comic agregado a favoritos"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Conflict(new Response()
+                {
+                    IsSuccess = false,
+                    Message = "Ocurrió un error al guardar el comic",
+                    Errors = ex.Message
+                });
+            }            
         }
 
         /// <summary>
         /// Método para quitar comics favoritos de la lista
         /// </summary>
         /// <param name="user"></param>
-        /// <param name="comicId"></param>
+        /// <param name="comic"></param>
         /// <returns></returns>
-        [HttpDelete("{comicId}")]
-        public async Task<ActionResult> UnfavoriteComic(Guid user, string comicId)
+        [HttpDelete("{user}/{comic}")]
+        public async Task<ActionResult> UnfavoriteComic(string user, int comic)
         {
             FavoriteComic model = new()
             {
-                UserId = user,
-                ComicId = comicId
+                User = user,
+                ComicId = comic
             };
             await _comicService.RemoveFavoriteComic(model);
 
@@ -51,7 +68,7 @@ namespace Marvel.Api.Controllers
         /// <param name="user"></param>
         /// <returns></returns>
         [HttpGet("{user}")]
-        public async Task<ActionResult<List<FavoriteComic>>> FavoriteComics(Guid user)
+        public async Task<ActionResult<List<FavoriteComic>>> FavoriteComics(string user)
         {
             var list = await _comicService.GetAllFavorites(user);
             if (list.Count != 0)

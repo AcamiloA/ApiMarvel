@@ -7,5 +7,6 @@
         public string Token_type { get; set; } = string.Empty;
         public int Expires_in { get; set; }
         public string? Refresh_token { get; set; }
+        public string User { get; set; } = string.Empty;
     }
 }

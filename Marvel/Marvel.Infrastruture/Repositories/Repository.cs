@@ -15,9 +15,11 @@ namespace Marvel.Infrastruture.Repositories
         public async Task DeleteAsync<T>(int id) where T : class
         {
             var data = await _context.Set<T>().FindAsync(id);
-            if(data != null)
+            if (data != null)
+            {
                 _context.Set<T>().Remove(data);
-            _context.SaveChanges();
+                _context.SaveChanges();
+            }
         }
 
         public async Task<List<T>> GetAllAsync<T>() where T : class
